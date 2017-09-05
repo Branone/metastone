@@ -1,0 +1,37 @@
+package net.demilich.metastone.game.spells;
+
+import net.demilich.metastone.game.GameContext;
+import net.demilich.metastone.game.Player;
+import net.demilich.metastone.game.cards.Card;
+import net.demilich.metastone.game.cards.CardCollection;
+import net.demilich.metastone.game.entities.Entity;
+import net.demilich.metastone.game.spells.desc.SpellArg;
+import net.demilich.metastone.game.spells.desc.SpellDesc;
+
+public class DiscoverDiscardSpell extends Spell {
+	
+	@Override
+	protected void onCast(GameContext context, Player player, SpellDesc desc, Entity source, Entity target) {
+		CardCollection cards = new CardCollection();
+		
+		if (player.getDeck().isEmpty()) {
+			return;
+		}
+		
+		// Sets the amount of cards being checked
+		int count = desc.getValue(SpellArg.HOW_MANY, context, player, target, source, 3);
+		
+		
+		// Determines how many cards are left in the deck (1, 2 or at least 3)
+		for (int i = 0; i < count; i++) {
+			if (!player.getDeck().isEmpty()) { //If the player's deck isn't empty...
+				Card card = player.getDeck().peekFirst();
+				context.getLogic().removeCardFromDeck(player.getId(), card);
+			}
+		}	
+		
+		if (!cards.isEmpty()) {
+			SpellUtils.castChildSpell(context, player, SpellUtils.getDiscover(context, player, desc, cards).getSpell(), source, target);
+		}
+	}
+}
